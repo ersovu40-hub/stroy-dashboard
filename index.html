@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>СтройДашборд 2026 | Управление строительством</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --blue: #3b82f6;
+            --blue-dark: #2563eb;
+            --blue-light: #eff6ff;
+            --red: #ef4444;
+            --red-light: #fef2f2;
+            --orange: #f97316;
+            --orange-light: #fff7ed;
+            --green: #10b981;
+            --green-light: #f0fdf4;
+            --yellow: #eab308;
+            --purple: #8b5cf6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        .nav-item.active {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .date-badge {
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .overdue-card .kpi-icon { background: var(--red-light); color: var(--red); }
+        .urgent-card .kpi-icon { background: var(--orange-light); color: var(--orange); }
+        .plan-card .kpi-icon { background: var(--green-light); color: var(--green); }
+        .overdue-card .kpi-value { color: var(--red); }
+        .urgent-card .kpi-value { color: var(--orange); }
+        .plan-card .kpi-value { color: var(--green); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-title i {
+            color: var(--blue);
+        }
+
+        .top-list {
+            list-style: none;
+        }
+
+        .top-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .top-list li:hover {
+            background: var(--blue-light);
+            margin: 0 -8px;
+            padding: 12px 8px;
+            border-radius: 12px;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: var(--blue);
+            margin-right: 12px;
+        }
+
+        .item-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .item-value {
+            font-weight: 700;
+            color: var(--orange);
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .map-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .map-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--blue);
+            box-shadow: var(--shadow-md);
+        }
+
+        .map-card i {
+            font-size: 2rem;
+            color: var(--blue);
+            margin-bottom: 8px;
+        }
+
+        .map-card .house-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 8px 0 4px;
+        }
+
+        .map-card .overdue-count {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .badge-critical { color: var(--red); }
+        .badge-high { color: var(--orange); }
+        .badge-medium { color: var(--yellow); }
+        .badge-low { color: var(--green); }
+
+        .search-box {
+            background: var(--bg-card);
+            border-radius: 60px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .search-box button {
+            background: var(--blue);
+            border: none;
+            color: white;
+            padding: 8px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .search-box button:hover {
+            background: var(--blue-dark);
+        }
+
+        .task-item {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .task-item:hover {
+            border-color: var(--blue);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .task-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-meta {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            background: var(--border-light);
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--blue), var(--purple));
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-tertiary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--blue-light);
+            border-color: var(--blue);
+        }
+
+        /* Стили для блока активности */
+        .activity-timeline {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .activity-date {
+            min-width: 100px;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .activity-details {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .badge-closed {
+            background: var(--green-light);
+            color: var(--green);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
+        .badge-new {
+            background: var(--red-light);
+            color: var(--red);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-urgent {
+            background: var(--orange-light);
+            color: var(--orange);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-updated {
+            background: var(--blue-light);
+            color: var(--blue);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
+        /* Стили для подрядчиков (блок состояние бригад) */
+        .contractor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .contractor-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .contractor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--blue);
+        }
+
+        .contractor-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contractor-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.25rem 0;
+            font-size: 0.8rem;
+        }
+
+        .contractor-progress {
+            margin: 0.5rem 0;
+        }
+
+        .status-critical {
+            color: var(--red);
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .status-warning {
+            color: var(--orange);
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .status-normal {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        
+        /* Стили для фильтров в доме */
+        .house-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .house-filter-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 40px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .house-filter-btn.overdue {
+            color: var(--red);
+        }
+
+        .house-filter-btn.urgent {
+            color: var(--orange);
+        }
+
+        .house-filter-btn.plan {
+            color: var(--green);
+        }
+
+        .house-filter-btn.active {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: white;
+        }
+
+        .house-filter-btn.overdue.active {
+            background: var(--red);
+            border-color: var(--red);
+            color: white;
+        }
+
+        .house-filter-btn.urgent.active {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: white;
+        }
+
+        .house-filter-btn.plan.active {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+        
+        .house-detail-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-stat {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .detail-stat .number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 101;
+                background: var(--blue);
+                padding: 0.75rem;
+                border-radius: 12px;
+                cursor: pointer;
+                color: white;
+                box-shadow: var(--shadow-md);
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+        }
+        
+        .week-range {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .red-text { color: var(--red); }
+        .orange-text { color: var(--orange); }
+        .green-text { color: var(--green); }
+        
+        /* Горизонтальные колонки для бригад */
+        .brigade-columns {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+        
+        .brigade-column {
+            flex: 1;
+            min-width: 320px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .column-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid;
+        }
+        
+        .column-header.critical { border-bottom-color: var(--red); }
+        .column-header.warning { border-bottom-color: var(--orange); }
+        .column-header.normal { border-bottom-color: var(--green); }
+        
+        .column-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .column-title.critical { color: var(--red); }
+        .column-title.warning { color: var(--orange); }
+        .column-title.normal { color: var(--green); }
+        
+        .column-count {
+            background: var(--bg-primary);
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Карточки для колонок */
+        .compact-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .compact-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .compact-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--blue);
+        }
+        
+        .compact-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .compact-card-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        
+        .compact-card-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+        }
+        
+        .compact-card-badge.critical {
+            background: var(--red-light);
+            color: var(--red);
+        }
+        
+        .compact-card-badge.warning {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+        
+        .compact-card-badge.normal {
+            background: var(--green-light);
+            color: var(--green);
+        }
+        
+        .compact-card-total {
+            text-align: center;
+            margin: 0.6rem 0;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
+        }
+        
+        .compact-card-total-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--blue);
+            line-height: 1;
+        }
+        
+        .compact-card-total-label {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: 0.2rem;
+        }
+        
+        .compact-card-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin: 0.75rem 0;
+        }
+        
+        .compact-card-stat {
+            flex: 1;
+            text-align: center;
+            padding: 0.4rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
+        }
+        
+        .compact-card-stat-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        
+        .compact-card-stat-label {
+            font-size: 0.6rem;
+            color: var(--text-tertiary);
+            margin-top: 0.2rem;
+        }
+        
+        .compact-card-stat-percent {
+            font-size: 0.6rem;
+            color: var(--text-tertiary);
+            margin-top: 0.15rem;
+        }
+        
+        .compact-card-progress {
+            margin-top: 0.6rem;
+        }
+        
+        .compact-card-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .compact-card-progress-bar {
+            height: 6px;
+            border-radius: 3px;
+        }
+                /* Вариант 3: колонки с фиксированной высотой и скроллом */
+        .brigade-columns {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+        
+        .brigade-column {
+            flex: 1;
+            min-width: 320px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            max-height: 550px;
+        }
+        
+        /* Заголовок колонки — фиксированный, не скроллится */
+        .column-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid;
+            flex-shrink: 0;
+        }
+        
+        .column-header.critical { border-bottom-color: var(--red); }
+        .column-header.warning { border-bottom-color: var(--orange); }
+        .column-header.normal { border-bottom-color: var(--green); }
+        
+        .column-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .column-title.critical { color: var(--red); }
+        .column-title.warning { color: var(--orange); }
+        .column-title.normal { color: var(--green); }
+        
+        .column-count {
+            background: var(--bg-primary);
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Контейнер с карточками — скроллится */
+        .compact-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 6px;
+        }
+        
+        /* Красивый скроллбар */
+        .compact-cards::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .compact-cards::-webkit-scrollbar-track {
+            background: var(--border-light);
+            border-radius: 10px;
+        }
+        
+        .compact-cards::-webkit-scrollbar-thumb {
+            background: var(--blue);
+            border-radius: 10px;
+        }
+        
+        .compact-cards::-webkit-scrollbar-thumb:hover {
+            background: var(--blue-dark);
+        }
+        
+        /* Карточка внутри колонки */
+        .compact-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 0.9rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .compact-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--blue);
+        }
+        
+        .compact-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+        
+        .compact-card-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+        
+        .compact-card-badge {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+        
+        .compact-card-badge.critical {
+            background: var(--red-light);
+            color: var(--red);
+        }
+        
+        .compact-card-badge.warning {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+        
+        .compact-card-badge.normal {
+            background: var(--green-light);
+            color: var(--green);
+        }
+        
+        .compact-card-total {
+            text-align: center;
+            margin: 0.5rem 0;
+            padding: 0.4rem;
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+        
+        .compact-card-total-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--blue);
+            line-height: 1;
+        }
+        
+        .compact-card-total-label {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-top: 0.15rem;
+        }
+        
+        .compact-card-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin: 0.6rem 0;
+        }
+        
+        .compact-card-stat {
+            flex: 1;
+            text-align: center;
+            padding: 0.35rem;
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+        
+        .compact-card-stat-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+        
+        .compact-card-stat-label {
+            font-size: 0.55rem;
+            color: var(--text-tertiary);
+            margin-top: 0.15rem;
+        }
+        
+        .compact-card-stat-percent {
+            font-size: 0.55rem;
+            color: var(--text-tertiary);
+            margin-top: 0.1rem;
+        }
+        
+        .compact-card-progress {
+            margin-top: 0.5rem;
+        }
+        
+        .compact-card-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-tertiary);
+            margin-bottom: 0.2rem;
+        }
+        
+        .compact-card-progress-bar {
+            height: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+                <h1>СтройДашборд</h1>
+            </div>
+            
+            <div class="nav-item active" onclick="navigateTo('dashboard')">
+                <i class="fas fa-chart-line"></i>
+                <span>Главная</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('houses')">
+                <i class="fas fa-building"></i>
+                <span>Дома</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('search')">
+                <i class="fas fa-search"></i>
+                <span>Поиск</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('analytics')">
+                <i class="fas fa-chart-bar"></i>
+                <span>Аналитика</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('map')">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Карта</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('settings')">
+                <i class="fas fa-cog"></i>
+                <span>Настройки</span>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="header">
+                <h2 class="page-title" id="pageTitle">Главная панель</h2>
+                <div class="date-badge" id="dateBadge"></div>
+            </div>
+            <div id="contentArea">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Загрузка данных...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwzWUtKDvUedWk51bRVK-CNBkXkbGj8FoiGam6vv3sIyuqK8MuArKYkusEzl_8dqdH0/exec";
+        
+        // ==================== КЭШИРОВАНИЕ ====================
+        const cache = {
+            data: null,
+            timestamp: 0,
+            ttl: 30000,
+            async get(key, fetcher) {
+                const now = Date.now();
+                if (this.data && this.data.key === key && (now - this.timestamp) < this.ttl) {
+                    console.log(`Cache hit: ${key}`);
+                    return this.data.value;
+                }
+                console.log(`Cache miss: ${key}, fetching...`);
+                const value = await fetcher();
+                this.data = { key, value };
+                this.timestamp = now;
+                return value;
+            }
+        };
+        
+        // State
+        let currentPage = 'dashboard';
+        let allData = [];
+        let topHousesData = [];
+        let topTasksData = [];
+        let weeklyStats = null;
+        let chartInstances = {};
+        let currentHouseFilter = 'overdue';
+        let currentHouse = null;
+        
+        function formatDate(date) {
+            if (!date) return '—';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString('ru-RU');
+        }
+        
+        function formatDateTime(date) {
+            if (!date) return '—';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleString('ru-RU', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // ==================== API FUNCTIONS ====================
+        async function fetchAllData() {
+            return cache.get('allData', async () => {
+                try {
+                    const response = await fetch(`${API_URL}?all=1`);
+                    const data = await response.json();
+                    return data.tasks || [];
+                } catch (error) {
+                    console.error('API Error:', error);
+                    return [];
+                }
+            });
+        }
+        
+        async function fetchStats() {
+            return cache.get('stats', async () => {
+                try {
+                    const response = await fetch(`${API_URL}?full=1`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Stats Error:', error);
+                    return { overdue: 0, urgent: 0, plan: 0 };
+                }
+            });
+        }
+        
+        async function fetchTops() {
+            return cache.get('tops', async () => {
+                try {
+                    const response = await fetch(`${API_URL}?tops=1`);
+                    const data = await response.json();
+                    return { topHouses: data.topHouses || [], topTasks: data.topTasks || [] };
+                } catch (error) {
+                    console.error('Tops Error:', error);
+                    return { topHouses: [], topTasks: [] };
+                }
+            });
+        }
+        
+        async function fetchWeeklyStats() {
+            return cache.get('weekly', async () => {
+                try {
+                    const response = await fetch(`${API_URL}?weekly=1`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Weekly Stats Error:', error);
+                    return { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], data: [0, 0, 0, 0, 0, 0, 0] };
+                }
+            });
+        }
+        
+        // ==================== ПОДРЯДЧИКИ (исправленная логика) ====================
+        function getContractorStats() {
+            console.log("=== getContractorStats START ===");
+            console.log("Total rows in allData:", allData.length);
+            
+            const stats = {};
+            let processedCount = 0;
+            let skippedStatus = 0;
+            let skippedNoExecutor = 0;
+            let skippedNoDates = 0;
+            
+            allData.forEach((row, idx) => {
+                // Исполнитель в колонке M (индекс 11)
+                const executor = String(row[11] || "").trim();
+                
+                // Статус в колонке N (индекс 12)
+                const status = String(row[12] || "").trim();
+                
+                // Пропускаем выполненные и закрытые (статус "В" или "К")
+                if (status === "В" || status === "К") {
+                    skippedStatus++;
+                    return;
+                }
+                
+                // Пропускаем если нет исполнителя
+                if (!executor) {
+                    skippedNoExecutor++;
+                    return;
+                }
+                
+                // Пропускаем заголовки
+                if (executor === "Исполнитель" || executor === "Ответственный") {
+                    return;
+                }
+                
+                // Получаем даты из колонок F (индекс 4) и H (индекс 6)
+                let startDate = row[4];
+                let endDate = row[6];
+                
+                // Парсим даты, если они в виде строки
+                if (typeof startDate === 'string' && startDate) {
+                    startDate = new Date(startDate);
+                }
+                if (typeof endDate === 'string' && endDate) {
+                    endDate = new Date(endDate);
+                }
+                
+                // Проверяем, что даты валидные
+                const hasValidStart = startDate instanceof Date && !isNaN(startDate);
+                const hasValidEnd = endDate instanceof Date && !isNaN(endDate);
+                
+                // Пропускаем задачи без валидных дат
+                if (!hasValidStart || !hasValidEnd) {
+                    skippedNoDates++;
+                    return;
+                }
+                
+                // Обрабатываем текст работы
+                let workName = String(row[3] || "").trim();
+                
+                // Объединяем "поставка материалов" в одну категорию
+                if (workName.toLowerCase().includes("поставка материалов") || 
+                    workName.toLowerCase().includes("поставка материал") ||
+                    workName.toLowerCase().includes("материалов (1.")) {
+                    workName = "Поставка материалов (Снабжение)";
+                }
+                
+                const bText = String(row[0] || "").toLowerCase();
+                const isOverdue = bText.includes("просроч");
+                const isUrgent = bText.includes("сроч") && !isOverdue;
+                const house = String(row[2] || "—");
+                
+                processedCount++;
+                
+                if (!stats[executor]) {
+                    stats[executor] = { total: 0, overdue: 0, urgent: 0, tasks: [] };
+                }
+                
+                stats[executor].total++;
+                if (isOverdue) stats[executor].overdue++;
+                if (isUrgent) stats[executor].urgent++;
+                
+                stats[executor].tasks.push({
+                    house: house,
+                    task: workName,
+                    originalTask: String(row[3] || "—"),
+                    start: startDate,
+                    end: endDate,
+                    status: isOverdue ? 'overdue' : (isUrgent ? 'urgent' : 'plan'),
+                    note: row[13] || ""
+                });
+            });
+            
+            console.log("=== getContractorStats SUMMARY ===");
+            console.log("Processed (active tasks with valid dates):", processedCount);
+            console.log("Skipped (status В/К):", skippedStatus);
+            console.log("Skipped (no valid dates):", skippedNoDates);
+            console.log("Skipped (no executor):", skippedNoExecutor);
+            console.log("Unique contractors found:", Object.keys(stats).length);
+            console.log("Contractors list:", Object.keys(stats));
+            
+            // Сортируем задачи
+            Object.values(stats).forEach(contractor => {
+                contractor.tasks.sort((a, b) => {
+                    const order = { overdue: 0, urgent: 1, plan: 2 };
+                    return order[a.status] - order[b.status];
+                });
+            });
+            
+            // Определяем статус ПО ПРОЦЕНТУ просроченных
+            const result = Object.entries(stats).map(([name, s]) => {
+                const overduePercent = s.total > 0 ? (s.overdue / s.total * 100) : 0;
+                let status = "normal";
+                let statusText = "Стабильно";
+                if (overduePercent >= 10) {
+                    status = "critical";
+                    statusText = "Требуется усиление!";
+                } else if (s.urgent >= 3) {
+                    status = "warning";
+                    statusText = "Есть риски";
+                }
+                return {
+                    name,
+                    total: s.total,
+                    overdue: s.overdue,
+                    urgent: s.urgent,
+                    tasks: s.tasks,
+                    overduePercent: Math.round(overduePercent),
+                    status,
+                    statusText
+                };
+            }).filter(c => c.total > 0).sort((a, b) => b.overduePercent - a.overduePercent);
+            
+            console.log("Final result count:", result.length);
+            return result;
+        }
+
+        
+        // ==================== АКТИВНОСТЬ ====================
+        function buildActivityLog() {
+            const today = new Date();
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            const activities = [];
+            
+            allData.forEach(row => {
+                const status = String(row[12] || "").trim();
+                const closeDate = row[7];
+                const bText = String(row[0] || "").toLowerCase();
+                const isOverdue = bText.includes("просроч");
+                const isUrgent = bText.includes("сроч") && !isOverdue;
+                const executor = String(row[11] || "").trim();
+                const house = String(row[2] || "—");
+                const task = String(row[3] || "—");
+                
+                // 1. Закрытые задачи
+                if (status === "В" && closeDate instanceof Date && !isNaN(closeDate) && closeDate >= weekAgo) {
+                    activities.push({
+                        type: 'closed',
+                        date: closeDate,
+                        title: `Закрыта задача`,
+                        details: `${house} — ${task}`,
+                        executor: executor
+                    });
+                }
+                
+                // 2. Просроченные задачи (активные)
+                if (isOverdue && status !== "В" && status !== "К") {
+                    activities.push({
+                        type: 'new',
+                        date: new Date(),
+                        title: `Просроченная задача`,
+                        details: `${house} — ${task}`,
+                        executor: executor
+                    });
+                }
+                
+                // 3. Срочные задачи
+                if (isUrgent && status !== "В" && status !== "К") {
+                    activities.push({
+                        type: 'urgent',
+                        date: new Date(),
+                        title: `Срочная задача`,
+                        details: `${house} — ${task}`,
+                        executor: executor
+                    });
+                }
+                
+                // 4. Назначен ответственный
+                if (executor && executor !== "—" && executor !== "не указан" && executor.length > 2) {
+                    activities.push({
+                        type: 'updated',
+                        date: new Date(),
+                        title: `Назначен ответственный`,
+                        details: `${house} — ${task}`,
+                        executor: executor
+                    });
+                }
+            });
+            
+            // Убираем дубликаты и сортируем
+            const unique = [];
+            const keys = new Set();
+            for (let a of activities) {
+                const key = `${a.type}_${a.details}_${a.executor}`;
+                if (!keys.has(key)) {
+                    keys.add(key);
+                    unique.push(a);
+                }
+            }
+            
+            unique.sort((a, b) => b.date - a.date);
+            return unique.slice(0, 20);
+        }
+        
+        // ==================== DATA PROCESSING ====================
+        function getTopHouses() {
+            if (topHousesData.length > 0) return topHousesData;
+            const stats = {};
+            allData.forEach(row => {
+                const bText = String(row[0] || "").toLowerCase();
+                if (bText.includes("просроч")) {
+                    const house = String(row[2] || "Без дома").trim();
+                    stats[house] = (stats[house] || 0) + 1;
+                }
+            });
+            return Object.entries(stats).sort((a, b) => b[1] - a[1]).slice(0, 7);
+        }
+        
+        function getTopTasks() {
+            if (topTasksData.length > 0) return topTasksData;
+            const stats = {};
+            allData.forEach(row => {
+                const bText = String(row[0] || "").toLowerCase();
+                if (bText.includes("просроч")) {
+                    const task = String(row[3] || "Без названия").trim();
+                    stats[task] = (stats[task] || 0) + 1;
+                }
+            });
+            return Object.entries(stats).sort((a, b) => b[1] - a[1]).slice(0, 7);
+        }
+        
+        function getHouseStats() {
+            const stats = {};
+            allData.forEach(row => {
+                const bText = String(row[0] || "").toLowerCase();
+                const house = String(row[2] || "Без дома").trim();
+                if (!stats[house]) stats[house] = { overdue: 0, urgent: 0, plan: 0, total: 0 };
+                if (bText.includes("просроч")) stats[house].overdue++;
+                else if (bText.includes("сроч")) stats[house].urgent++;
+                else stats[house].plan++;
+                stats[house].total++;
+            });
+            return stats;
+        }
+        
+        function searchTasks(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) return [];
+            return allData.filter(row => {
+                const status = String(row[12] || "").trim();
+                // Показываем всё, кроме выполненных и закрытых
+                if (status === "В" || status === "К") return false;
+                
+                const house = String(row[2] || "").toLowerCase();
+                const task = String(row[3] || "").toLowerCase();
+                const executor = String(row[11] || "").toLowerCase();
+                return house.includes(q) || task.includes(q) || executor.includes(q);
+            }).slice(0, 50);
+        }
+        
+        function getTasksByHouse(house, filter = 'all') {
+            return allData.filter(row => {
+                const rowHouse = String(row[2] || "").trim();
+                if (rowHouse !== house) return false;
+                const bText = String(row[0] || "").toLowerCase();
+                if (filter === 'overdue') return bText.includes("просроч");
+                if (filter === 'urgent') return bText.includes("сроч") && !bText.includes("просроч");
+                if (filter === 'plan') return !bText.includes("просроч") && !bText.includes("сроч");
+                return true;
+            });
+        }
+        
+        // ==================== ФУНКЦИЯ: ДЕТАЛИ ПОДРЯДЧИКА ====================
+        function renderContractorDetail(contractorName, data) {
+            const tasks = data.tasks || [];
+            // Сортировка: просроченные → срочные → плановые
+            const sortedTasks = [...tasks].sort((a, b) => {
+                const order = { overdue: 0, urgent: 1, plan: 2 };
+                return order[a.status] - order[b.status];
+            });
+            
+            const total = data.total;
+            const overduePercent = data.overduePercent;
+            const urgentPercent = total > 0 ? Math.round((data.urgent / total) * 100) : 0;
+            const planPercent = total > 0 ? Math.round(((total - data.overdue - data.urgent) / total) * 100) : 0;
+            
+            return `
+                <button class="back-btn" onclick="navigateTo('dashboard')">
+                    <i class="fas fa-arrow-left"></i> Назад к дашборду
+                </button>
+                <div class="stat-card">
+                    <h2 style="margin-bottom: 1rem;">👥 ${contractorName}</h2>
+                    
+                    <div class="house-detail-stats">
+                        <div class="detail-stat">
+                            <div class="number red-text">${data.overdue}</div>
+                            <div class="stat-label">Просрочено</div>
+                            <div style="font-size:0.75rem;">(${overduePercent}%)</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="number orange-text">${data.urgent}</div>
+                            <div class="stat-label">Срочные</div>
+                            <div style="font-size:0.75rem;">(${urgentPercent}%)</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="number green-text">${total - data.overdue - data.urgent}</div>
+                            <div class="stat-label">Плановые</div>
+                            <div style="font-size:0.75rem;">(${planPercent}%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar" style="margin: 1rem 0; height: 8px;">
+                        <div class="progress-fill" style="width: ${overduePercent}%; background: var(--red);"></div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.7rem;">
+                        <span class="red-text">▮ Просрочка ${overduePercent}%</span>
+                        <span class="orange-text">▮ Срочные ${urgentPercent}%</span>
+                        <span class="green-text">▮ Плановые ${planPercent}%</span>
+                    </div>
+                    
+                    <div class="${data.status === 'critical' ? 'status-critical' : data.status === 'warning' ? 'status-warning' : 'status-normal'}" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 12px; text-align: center;">
+                        ${data.statusText}
+                    </div>
+                    
+                    <h3 style="margin: 1.5rem 0 1rem;">📋 Список задач</h3>
+                    ${sortedTasks.map(task => `
+                        <div class="task-item" onclick="viewHouse('${task.house.replace(/'/g, "\\'")}')">
+                            <div class="task-title">
+                                <span class="${task.status === 'overdue' ? 'red-text' : task.status === 'urgent' ? 'orange-text' : 'green-text'}" style="font-weight: 700;">${task.status === 'overdue' ? '🔴' : task.status === 'urgent' ? '🟠' : '🟢'}</span>
+                                <strong>${task.task}</strong>
+                                ${task.originalTask !== task.task ? `<span style="font-size:0.7rem; color:var(--text-tertiary); margin-left:8px;">(было: ${task.originalTask.substring(0, 35)}...)</span>` : ''}
+                            </div>
+                            <div>🏠 ${task.house}</div>
+                            <div class="task-meta">
+                                <span>Срок: ${formatDate(task.start)} → ${formatDate(task.end)}</span>
+                            </div>
+                            ${task.note ? `<div style="margin-top:8px; font-size:0.875rem;">📌 ${task.note}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // ==================== RENDER FUNCTIONS ====================
+        function renderDashboard(stats, topHouses, topTasks, houseStats, weeklyData, activities, contractors) {
+            const overdue = stats.overdue || 0;
+            const urgent = stats.urgent || 0;
+            const plan = stats.plan || 0;
+            const total = overdue + urgent + plan;
+            
+            // Индекс стройки (простая формула)
+            const indexValue = overdue < 10 ? 8.5 : overdue < 30 ? 7.2 : overdue < 50 ? 6.0 : 4.5;
+            
+            const houseEntries = Object.entries(houseStats).map(([name, s]) => [name, s.overdue]).sort((a, b) => b[1] - a[1]);
+            
+            // Подготовим данные для графика
+            const weekRangeText = weeklyData?.weekRange || '';
+            
+            setTimeout(() => initWeeklyChart(weeklyData), 50);
+            
+            return `
+                <div class="kpi-grid">
+                    <div class="kpi-card overdue-card">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Просрочено</span>
+                            <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        </div>
+                        <div class="kpi-value">${overdue}</div>
+                        <div class="kpi-sub"> Требует немедленного внимания</div>
+                    </div>
+                    <div class="kpi-card urgent-card">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Срочные</span>
+                            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="kpi-value">${urgent}</div>
+                        <div class="kpi-sub"> На контроле, сроки поджимают</div>
+                    </div>
+                    <div class="kpi-card plan-card">
+                        <div class="kpi-header">
+                            <span class="kpi-title">В плане</span>
+                            <div class="kpi-icon"><i class="fas fa-calendar-check"></i></div>
+                        </div>
+                        <div class="kpi-value">${plan}</div>
+                        <div class="kpi-sub"> По графику, без отклонений</div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                                        <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="fas fa-chart-simple"></i>
+                            <span>Индекс строительной готовности</span>
+                        </div>
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--blue);">${indexValue}</div>
+                        <div style="margin-top: 0.5rem; color: var(--text-tertiary);">из 10 возможных</div>
+                        <div class="progress-bar" style="margin-top: 1rem;">
+                            <div class="progress-fill" style="width: ${(indexValue/10)*100}%"></div>
+                        </div>
+                        <div style="margin-top: 1.5rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 12px;">
+                            <div style="font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary);">
+                                <strong>Шкала оценки:</strong><br>
+                                • 8-10 — стабильная работа, просрочек мало<br>
+                                • 5-7 — есть отклонения, требуют контроля<br>
+                                • 0-4 — критическое отставание, срочные меры
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Динамика закрытых задач за неделю</span>
+                        </div>
+                        <canvas id="weeklyChart" style="max-height: 200px;"></canvas>
+                        <div class="week-range">📅 ${weekRangeText || 'Текущая неделя'}</div>
+                    </div>
+                </div>
+                
+                <!-- БЛОК СОСТОЯНИЕ БРИГАД (ГОРИЗОНТАЛЬНЫЕ КОЛОНКИ) -->
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-users"></i>
+                        <span>Состояние бригад</span>
+                    </div>
+                    
+                    <div class="brigade-columns">
+                        <!-- КОЛОНКА 1: ТРЕБУЮТ УСИЛЕНИЯ -->
+                        <div class="brigade-column">
+                            <div class="column-header critical">
+                                <span style="font-size: 1.2rem;">🚨</span>
+                                <span class="column-title critical">Требуют усиления</span>
+                                <span class="column-count">${contractors.filter(c => c.status === 'critical').length}</span>
+                            </div>
+                            <div class="compact-cards">
+                                ${contractors.filter(c => c.status === 'critical')
+                                    .sort((a, b) => b.overduePercent - a.overduePercent)
+                                    .map(c => {
+                                    const progressPercent = c.overduePercent;
+                                    return `
+                                    <div class="compact-card" onclick="viewContractor('${c.name.replace(/'/g, "\\'")}')">
+                                        <div class="compact-card-header">
+                                            <div class="compact-card-name">${c.name}</div>
+                                            <div class="compact-card-badge critical">🚨 ${c.statusText}</div>
+                                        </div>
+                                        <div class="compact-card-total">
+                                            <div class="compact-card-total-number">${c.total}</div>
+                                            <div class="compact-card-total-label">всего задач</div>
+                                        </div>
+                                        <div class="compact-card-stats">
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value red-text">${c.overdue}</div>
+                                                <div class="compact-card-stat-label">просрочено</div>
+                                                <div class="compact-card-stat-percent">${c.overduePercent}%</div>
+                                            </div>
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value orange-text">${c.urgent}</div>
+                                                <div class="compact-card-stat-label">срочных</div>
+                                            </div>
+                                        </div>
+                                        <div class="compact-card-progress">
+                                            <div class="compact-card-progress-label">
+                                                <span>Просрочка</span>
+                                                <span>${c.overduePercent}%</span>
+                                            </div>
+                                            <div class="progress-bar compact-card-progress-bar">
+                                                <div class="progress-fill" style="width: ${progressPercent}%; background: #ef4444;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `;
+                                }).join('')}
+                                ${contractors.filter(c => c.status === 'critical').length === 0 ? '<div style="text-align:center; padding:1.5rem; color: var(--green);">✅ Нет</div>' : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- КОЛОНКА 2: ОБРАТИТЬ ВНИМАНИЕ -->
+                        <div class="brigade-column">
+                            <div class="column-header warning">
+                                <span style="font-size: 1.2rem;">⚠️</span>
+                                <span class="column-title warning">Обратить внимание</span>
+                                <span class="column-count">${contractors.filter(c => c.status === 'warning').length}</span>
+                            </div>
+                            <div class="compact-cards">
+                                ${contractors.filter(c => c.status === 'warning')
+                                    .sort((a, b) => b.overduePercent - a.overduePercent)
+                                    .map(c => {
+                                    const progressPercent = c.overduePercent;
+                                    return `
+                                    <div class="compact-card" onclick="viewContractor('${c.name.replace(/'/g, "\\'")}')">
+                                        <div class="compact-card-header">
+                                            <div class="compact-card-name">${c.name}</div>
+                                            <div class="compact-card-badge warning">⚠️ ${c.statusText}</div>
+                                        </div>
+                                        <div class="compact-card-total">
+                                            <div class="compact-card-total-number">${c.total}</div>
+                                            <div class="compact-card-total-label">всего задач</div>
+                                        </div>
+                                        <div class="compact-card-stats">
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value red-text">${c.overdue}</div>
+                                                <div class="compact-card-stat-label">просрочено</div>
+                                                <div class="compact-card-stat-percent">${c.overduePercent}%</div>
+                                            </div>
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value orange-text">${c.urgent}</div>
+                                                <div class="compact-card-stat-label">срочных</div>
+                                            </div>
+                                        </div>
+                                        <div class="compact-card-progress">
+                                            <div class="compact-card-progress-label">
+                                                <span>Просрочка</span>
+                                                <span>${c.overduePercent}%</span>
+                                            </div>
+                                            <div class="progress-bar compact-card-progress-bar">
+                                                <div class="progress-fill" style="width: ${progressPercent}%; background: #f97316;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `;
+                                }).join('')}
+                                ${contractors.filter(c => c.status === 'warning').length === 0 ? '<div style="text-align:center; padding:1.5rem; color: var(--green);">✅ Нет</div>' : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- КОЛОНКА 3: СТАБИЛЬНО -->
+                        <div class="brigade-column">
+                            <div class="column-header normal">
+                                <span style="font-size: 1.2rem;">✅</span>
+                                <span class="column-title normal">Стабильно</span>
+                                <span class="column-count">${contractors.filter(c => c.status === 'normal').length}</span>
+                            </div>
+                            <div class="compact-cards">
+                                ${contractors.filter(c => c.status === 'normal')
+                                    .sort((a, b) => b.overduePercent - a.overduePercent)
+                                    .map(c => {
+                                    const progressPercent = c.overduePercent;
+                                    return `
+                                    <div class="compact-card" onclick="viewContractor('${c.name.replace(/'/g, "\\'")}')">
+                                        <div class="compact-card-header">
+                                            <div class="compact-card-name">${c.name}</div>
+                                            <div class="compact-card-badge normal">✅ ${c.statusText}</div>
+                                        </div>
+                                        <div class="compact-card-total">
+                                            <div class="compact-card-total-number">${c.total}</div>
+                                            <div class="compact-card-total-label">всего задач</div>
+                                        </div>
+                                        <div class="compact-card-stats">
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value red-text">${c.overdue}</div>
+                                                <div class="compact-card-stat-label">просрочено</div>
+                                                <div class="compact-card-stat-percent">${c.overduePercent}%</div>
+                                            </div>
+                                            <div class="compact-card-stat">
+                                                <div class="compact-card-stat-value orange-text">${c.urgent}</div>
+                                                <div class="compact-card-stat-label">срочных</div>
+                                            </div>
+                                        </div>
+                                        <div class="compact-card-progress">
+                                            <div class="compact-card-progress-label">
+                                                <span>Просрочка</span>
+                                                <span>${c.overduePercent}%</span>
+                                            </div>
+                                            <div class="progress-bar compact-card-progress-bar">
+                                                <div class="progress-fill" style="width: ${progressPercent}%; background: #10b981;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    `;
+                                }).join('')}
+                                ${contractors.filter(c => c.status === 'normal').length === 0 ? '<div style="text-align:center; padding:1.5rem;">Нет</div>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="fas fa-trophy"></i>
+                            <span> Топ проблемных домов</span>
+                        </div>
+                        <ul class="top-list">
+                            ${topHouses.map((item, i) => `
+                                <li onclick="viewHouse('${String(item[0]).replace(/'/g, "\\'")}')">
+                                    <span><span class="rank">${i+1}</span> <span class="item-name">${item[0]}</span></span>
+                                    <span class="item-value">${item[1]} просрочек</span>
+                                </li>
+                            `).join('')}
+                            ${topHouses.length === 0 ? '<li style="justify-content:center;">✅ Нет просроченных задач</li>' : ''}
+                        </ul>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="fas fa-hard-hat"></i>
+                            <span> Топ проблемных работ</span>
+                        </div>
+                        <ul class="top-list">
+                            ${topTasks.map((item, i) => `
+                                <li>
+                                    <span><span class="rank">${i+1}</span> <span class="item-name">${item[0]}</span></span>
+                                    <span class="item-value">${item[1]} шт</span>
+                                </li>
+                            `).join('')}
+                            ${topTasks.length === 0 ? '<li style="justify-content:center;">✅ Нет просроченных задач</li>' : ''}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-history"></i>
+                        <span> Ход строительства — последние события</span>
+                    </div>
+                    <div class="activity-timeline">
+                        ${activities.length > 0 ? activities.map(a => `
+                            <div class="activity-item">
+                                <div class="activity-date">${formatDateTime(a.date)}</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">
+                                        <span class="${a.type === 'closed' ? 'badge-closed' : a.type === 'new' ? 'badge-new' : a.type === 'urgent' ? 'badge-urgent' : 'badge-updated'}">
+                                            ${a.type === 'closed' ? 'ЗАКРЫТО' : a.type === 'new' ? 'ПРОСРОЧКА' : a.type === 'urgent' ? 'СРОЧНО' : 'ОБНОВЛЕНИЕ'}
+                                        </span>
+                                        <span style="margin-left: 8px;">${a.title}</span>
+                                    </div>
+                                    <div class="activity-details">${a.details}</div>
+                                    ${a.executor ? `<div class="activity-details">Ответственный: ${a.executor}</div>` : ''}
+                                    ${a.reason ? `<div class="activity-details">Причина: ${a.reason}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('') : '<div style="padding: 2rem; text-align: center;">Нет активности за последние 7 дней</div>'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ==================== ОСТАЛЬНЫЕ RENDER ФУНКЦИИ ====================
+        function renderMapView(houseStats) {
+            const houses = Object.entries(houseStats).sort((a, b) => b[1].overdue - a[1].overdue);
+            return `
+                <div class="map-grid">
+                    ${houses.map(([house, stats]) => `
+                        <div class="map-card" onclick="viewHouse('${String(house).replace(/'/g, "\\'")}')">
+                            <i class="fas fa-building"></i>
+                            <div class="house-name">${house}</div>
+                            <div class="overdue-count ${stats.overdue >= 10 ? 'badge-critical' : stats.overdue >= 5 ? 'badge-high' : stats.overdue >= 2 ? 'badge-medium' : 'badge-low'}">${stats.overdue}</div>
+                            <small>просрочек</small>
+                            <div style="font-size: 0.75rem; margin-top: 8px;">📊 ${stats.total} задач всего</div>
+                        </div>
+                    `).join('')}
+                    ${houses.length === 0 ? '<div style="grid-column:1/-1;text-align:center;padding:3rem;">Нет данных по домам</div>' : ''}
+                </div>
+            `;
+        }
+        
+        function renderHousesView(houseStats) {
+            const houses = Object.entries(houseStats).sort((a, b) => b[1].overdue - a[1].overdue);
+            return `
+                <div class="map-grid">
+                    ${houses.map(([house, stats]) => `
+                        <div class="map-card" onclick="viewHouse('${String(house).replace(/'/g, "\\'")}')">
+                            <i class="fas fa-building"></i>
+                            <div class="house-name">${house}</div>
+                            <div class="overdue-count ${stats.overdue >= 10 ? 'badge-critical' : stats.overdue >= 5 ? 'badge-high' : stats.overdue >= 2 ? 'badge-medium' : 'badge-low'}">${stats.overdue}</div>
+                            <small>просрочек</small>
+                            <div style="margin-top: 8px; display: flex; justify-content: center; gap: 12px; font-size: 0.75rem;">
+                                <span>🟠 Сроч: ${stats.urgent}</span>
+                                <span>🟢 План: ${stats.plan}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function renderSearchView() {
+            return `
+                <div class="search-box">
+                    <i class="fas fa-search" style="color: var(--text-tertiary);"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск по дому, задаче, исполнителю..." onkeypress="if(event.key === 'Enter') doSearch()">
+                    <button onclick="doSearch()">Найти</button>
+                </div>
+                <div id="searchResults"></div>
+            `;
+        }
+        
+        function renderSearchResults(tasks) {
+            if (!tasks || tasks.length === 0) {
+                return `<div class="stat-card" style="text-align:center; padding:3rem;">🔍 Ничего не найдено</div>`;
+            }
+            
+            return `
+                <div class="stat-card">
+                    <div class="stat-title">📋 Результаты поиска <span style="font-size:0.875rem;">(${tasks.length})</span></div>
+                    ${tasks.map(task => {
+                        const bText = String(task[0] || "").toLowerCase();
+                        const isOverdue = bText.includes("просроч");
+                        return `
+                            <div class="task-item" onclick="viewHouse('${String(task[2]).replace(/'/g, "\\'")}')">
+                                <div class="task-title">
+                                    ${isOverdue ? '🔴' : '📋'} <strong>${task[3] || 'Без названия'}</strong>
+                                </div>
+                                <div>🏠 ${task[2] || '—'}</div>
+                                <div class="task-meta">
+                                    <span><i class="fas fa-user"></i> ${task[11] || 'не указан'}</span>
+                                    <span><i class="fas fa-calendar"></i> ${formatDate(task[4])} → ${formatDate(task[6])}</span>
+                                </div>
+                                ${isOverdue ? `<div style="margin-top:8px;"><span style="background:var(--red-light);color:var(--red);padding:2px 8px;border-radius:20px;font-size:0.75rem;">Просрочено</span></div>` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        function renderAnalyticsView(stats, topHouses, topTasks, weekRange) {
+            const overdue = stats.overdue || 0;
+            const urgent = stats.urgent || 0;
+            const plan = stats.plan || 0;
+            const total = overdue + urgent + plan;
+            const weeklyTrendData = weeklyStats?.data || [0, 0, 0, 0, 0, 0, 0];
+            
+            setTimeout(() => {
+                initPieChart(overdue, urgent, plan);
+                initTrendChart(weeklyTrendData);
+            }, 50);
+            
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">📊 Распределение задач</div>
+                        <canvas id="pieChart" style="max-height: 250px;"></canvas>
+                        <div style="margin-top: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>🔴 Просрочено</span>
+                                <span><strong>${Math.round((overdue/total)*100) || 0}%</strong> (${overdue})</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${(overdue/total)*100 || 0}%; background: var(--red);"></div></div>
+                            <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                                <span>🟠 Срочные</span>
+                                <span><strong>${Math.round((urgent/total)*100) || 0}%</strong> (${urgent})</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${(urgent/total)*100 || 0}%; background: var(--orange);"></div></div>
+                            <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                                <span>🟢 В плане</span>
+                                <span><strong>${Math.round((plan/total)*100) || 0}%</strong> (${plan})</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${(plan/total)*100 || 0}%; background: var(--green);"></div></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">📈 Тренд просрочек (закрытых задач по дням)</div>
+                        <canvas id="trendChart" style="max-height: 250px;"></canvas>
+                        <div style="margin-top: 1rem; text-align: center; color: var(--text-tertiary); font-size: 0.875rem;">
+                            ${weekRange?.label || 'Текущая неделя'}
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">🏆 Топ проблемных домов</div>
+                        <ul class="top-list">
+                            ${topHouses.map((item, i) => `
+                                <li onclick="viewHouse('${String(item[0]).replace(/'/g, "\\'")}')">
+                                    <span><span class="rank">${i+1}</span> <span class="item-name">${item[0]}</span></span>
+                                    <span class="item-value">${item[1]} просрочек</span>
+                                </li>
+                            `).join('')}
+                            ${topHouses.length === 0 ? '<li>Нет данных</li>' : ''}
+                        </ul>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">🏆 Топ проблемных работ</div>
+                        <ul class="top-list">
+                            ${topTasks.map((item, i) => `
+                                <li>
+                                    <span><span class="rank">${i+1}</span> <span class="item-name">${item[0]}</span></span>
+                                    <span class="item-value">${item[1]} шт</span>
+                                </li>
+                            `).join('')}
+                            ${topTasks.length === 0 ? '<li>Нет данных</li>' : ''}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderHouseDetail(house) {
+            const overdueTasks = getTasksByHouse(house, 'overdue');
+            const urgentTasks = getTasksByHouse(house, 'urgent');
+            const planTasks = getTasksByHouse(house, 'plan');
+            
+            const getTasksForFilter = () => {
+                if (currentHouseFilter === 'overdue') return overdueTasks;
+                if (currentHouseFilter === 'urgent') return urgentTasks;
+                if (currentHouseFilter === 'plan') return planTasks;
+                return overdueTasks;
+            };
+            
+            const tasks = getTasksForFilter();
+            
+            return `
+                <button class="back-btn" onclick="navigateTo('houses')">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </button>
+                <div class="stat-card">
+                    <h2 style="margin-bottom: 1rem;">🏠 ${house}</h2>
+                    
+                    <div class="house-detail-stats">
+                        <div class="detail-stat">
+                            <div class="number red-text">${overdueTasks.length}</div>
+                            <div class="stat-label">Просрочено</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="number orange-text">${urgentTasks.length}</div>
+                            <div class="stat-label">Срочные</div>
+                        </div>
+                        <div class="detail-stat">
+                            <div class="number green-text">${planTasks.length}</div>
+                            <div class="stat-label">Плановые</div>
+                        </div>
+                    </div>
+                    
+                    <div class="house-filters">
+                        <button class="house-filter-btn overdue ${currentHouseFilter === 'overdue' ? 'active' : ''}" onclick="setHouseFilter('overdue')">Просроченные (${overdueTasks.length})</button>
+                        <button class="house-filter-btn urgent ${currentHouseFilter === 'urgent' ? 'active' : ''}" onclick="setHouseFilter('urgent')">Срочные (${urgentTasks.length})</button>
+                        <button class="house-filter-btn plan ${currentHouseFilter === 'plan' ? 'active' : ''}" onclick="setHouseFilter('plan')">Плановые (${planTasks.length})</button>
+                    </div>
+                    
+                    <div id="houseTasksList">
+                        ${tasks.length > 0 ? tasks.map(task => `
+                            <div class="task-item">
+                                <div class="task-title"><strong>${task[3] || 'Без названия'}</strong></div>
+                                <div class="task-meta">
+                                    <span>Ответственный: ${task[11] || 'не указан'}</span>
+                                    <span>Срок: ${formatDate(task[4])} → ${formatDate(task[6])}</span>
+                                </div>
+                                ${task[13] ? `<div style="margin-top:8px; font-size:0.875rem;">📌 ${task[13]}</div>` : ''}
+                            </div>
+                        `).join('') : '<div style="padding: 2rem; text-align: center;">Задач нет</div>'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function setHouseFilter(filter) {
+            currentHouseFilter = filter;
+            if (currentPage === 'house_detail' && currentHouse) {
+                const contentArea = document.getElementById('contentArea');
+                contentArea.innerHTML = renderHouseDetail(currentHouse);
+            }
+        }
+        
+        function renderSettingsView(stats) {
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">⚙️ Настройки интерфейса</div>
+                        <div style="margin: 1.5rem 0;">
+                            <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
+                                <input type="checkbox" id="winterModeToggle" onchange="toggleWinterMode()">
+                                <span>❄️ Зимний режим (фильтрация зимних работ)</span>
+                            </label>
+                            <small style="color: var(--text-tertiary); display: block; margin-top: 0.5rem;">Включает фильтрацию работ: цоколь, база, финиш, ограждение и т.д.</small>
+                        </div>
+                        <div style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                            <div class="stat-title">📡 Статус подключения</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                <i class="fas fa-circle" style="font-size: 0.75rem; color: var(--green);"></i>
+                                <span>API подключен</span>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-tertiary); word-break: break-all;">
+                                URL: ${API_URL}
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-tertiary);">
+                                Последнее обновление: ${new Date().toLocaleString('ru-RU')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">ℹ️ О системе</div>
+                        <div style="margin: 1rem 0;">
+                            <p><strong>СтройДашборд 2026</strong> — система мониторинга строительных задач</p>
+                            <p style="margin-top: 0.5rem;">Данные синхронизируются с Google Sheets в реальном времени.</p>
+                            <p style="margin-top: 0.5rem;">Все отчёты формируются на основе актуальных данных из таблицы.</p>
+                        </div>
+                        <div style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                            <div class="stat-title">📊 Статистика</div>
+                            <div style="margin-top: 0.5rem;">
+                                <div>📋 Всего задач: <strong>${allData.length}</strong></div>
+                                <div>🔴 Просрочено: <strong>${stats.overdue || 0}</strong></div>
+                                <div>🏠 Домов: <strong>${Object.keys(getHouseStats()).length}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ==================== CHARTS ====================
+        function initWeeklyChart(weeklyData) {
+            const ctx = document.getElementById('weeklyChart')?.getContext('2d');
+            if (!ctx) return;
+            if (chartInstances.weekly) chartInstances.weekly.destroy();
+            
+            const labels = weeklyData?.labels || ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            const data = weeklyData?.data || [0, 0, 0, 0, 0, 0, 0];
+            
+            chartInstances.weekly = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Закрыто задач',
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#fff', titleColor: '#0f172a', bodyColor: '#475569', borderColor: '#e2e8f0', borderWidth: 1 }
+                    },
+                    scales: {
+                        y: { grid: { color: '#e2e8f0' }, ticks: { color: '#64748b' }, title: { display: true, text: 'Количество задач', color: '#64748b' } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+        
+        function initPieChart(overdue, urgent, plan) {
+            const ctx = document.getElementById('pieChart')?.getContext('2d');
+            if (!ctx) return;
+            if (chartInstances.pie) chartInstances.pie.destroy();
+            
+            chartInstances.pie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Просрочено', 'Срочные', 'В плане'],
+                    datasets: [{
+                        data: [overdue, urgent, plan],
+                        backgroundColor: ['#ef4444', '#f97316', '#10b981'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#475569', font: { size: 12 } } }
+                    }
+                }
+            });
+        }
+        
+        function initTrendChart(data) {
+            const ctx = document.getElementById('trendChart')?.getContext('2d');
+            if (!ctx) return;
+            if (chartInstances.trend) chartInstances.trend.destroy();
+            
+            chartInstances.trend = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    datasets: [{
+                        label: 'Закрыто задач',
+                        data: data,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 8,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} закрытых задач` } }
+                    },
+                    scales: {
+                        y: { grid: { color: '#e2e8f0' }, ticks: { color: '#64748b' }, title: { display: true, text: 'Количество задач', color: '#64748b' } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+        
+        // ==================== PAGE NAVIGATION ====================
+        async function navigateTo(page) {
+            currentPage = page;
+            
+            document.querySelectorAll('.nav-item').forEach((item) => {
+                item.classList.remove('active');
+                const text = item.querySelector('span')?.innerText;
+                if ((page === 'dashboard' && text === 'Главная') ||
+                    (page === 'houses' && text === 'Дома') ||
+                    (page === 'search' && text === 'Поиск') ||
+                    (page === 'analytics' && text === 'Аналитика') ||
+                    (page === 'map' && text === 'Карта') ||
+                    (page === 'settings' && text === 'Настройки')) {
+                    item.classList.add('active');
+                }
+            });
+            
+            document.getElementById('pageTitle').innerText = getPageTitle(page);
+            document.getElementById('dateBadge').innerHTML = `<i class="far fa-calendar-alt"></i> ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>Загрузка данных...</p></div>';
+            
+            // Параллельная загрузка всех данных
+            const [data, stats, topsData, weekly] = await Promise.all([
+                fetchAllData(),
+                fetchStats(),
+                fetchTops(),
+                fetchWeeklyStats()
+            ]);
+            
+            allData = data;
+            topHousesData = topsData.topHouses;
+            topTasksData = topsData.topTasks;
+            weeklyStats = weekly;
+            
+            const topHouses = getTopHouses();
+            const topTasks = getTopTasks();
+            const houseStats = getHouseStats();
+            const weekRange = { label: weeklyStats?.weekRange || '' };
+            const activities = buildActivityLog();
+            const contractors = getContractorStats();
+            
+            switch(page) {
+                case 'dashboard':
+                    contentArea.innerHTML = renderDashboard(stats, topHouses, topTasks, houseStats, weeklyStats, activities, contractors);
+                    break;
+                case 'houses':
+                    contentArea.innerHTML = renderHousesView(houseStats);
+                    break;
+                case 'search':
+                    contentArea.innerHTML = renderSearchView();
+                    break;
+                case 'analytics':
+                    contentArea.innerHTML = renderAnalyticsView(stats, topHouses, topTasks, weekRange);
+                    break;
+                case 'map':
+                    contentArea.innerHTML = renderMapView(houseStats);
+                    break;
+                case 'settings':
+                    contentArea.innerHTML = renderSettingsView(stats);
+                    break;
+            }
+            
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+        
+        async function viewHouse(houseName) {
+            currentPage = 'house_detail';
+            currentHouse = houseName;
+            currentHouseFilter = 'overdue';
+            document.getElementById('pageTitle').innerHTML = `<i class="fas fa-building"></i> ${houseName}`;
+            
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>Загрузка данных...</p></div>';
+            
+            await fetchAllData();
+            contentArea.innerHTML = renderHouseDetail(houseName);
+        }
+        
+        async function viewContractor(contractorName) {
+            const contractors = getContractorStats();
+            const contractor = contractors.find(c => c.name === contractorName);
+            if (!contractor) return;
+            
+            currentPage = 'contractor_detail';
+            document.getElementById('pageTitle').innerHTML = `<i class="fas fa-users"></i> ${contractorName}`;
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = renderContractorDetail(contractorName, contractor);
+        }
+        
+        async function doSearch() {
+            const query = document.getElementById('searchInput')?.value;
+            if (!query) return;
+            
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            await fetchAllData();
+            const results = searchTasks(query);
+            resultsDiv.innerHTML = renderSearchResults(results);
+        }
+        
+        function getPageTitle(page) {
+            const titles = {
+                dashboard: 'Главная панель',
+                houses: 'Список домов',
+                search: 'Поиск задач',
+                analytics: 'Аналитика',
+                map: 'Карта объектов',
+                settings: 'Настройки',
+                house_detail: 'Детали дома',
+                contractor_detail: 'Задачи подрядчика'
+            };
+            return titles[page] || 'СтройДашборд';
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+        
+        function toggleWinterMode() {
+            const isWinter = document.getElementById('winterModeToggle')?.checked;
+            localStorage.setItem('winterMode', isWinter);
+            console.log('Зимний режим:', isWinter ? 'включен' : 'выключен');
+        }
+        
+        async function init() {
+            await navigateTo('dashboard');
+        }
+        
+        init();
+    </script>
+</body>
+</html>
